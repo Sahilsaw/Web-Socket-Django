@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ room_name }}</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f6f9;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .profile-icon {
+        color: #12151a;
+      }
+
+      .chat-container {
+        flex: 1;
+      }
+
+      #chatbox {
+        background-color: #fff;
+        overflow-y: auto;
+        height: calc(100vh - 180px);
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(to bottom, #f9f9f9, #ffffff);
+      }
+
+      .chat-message {
+        border-radius: 8px;
+        padding: 12px;
+        display: flex;
+        width: fit-content;
+        margin-bottom: 12px;
+        clear: both;
+        max-width: 80%;
+      }
+
+      .chat-message.sender {
+        background-color: #e9f7fb;
+        color: #435f7a;
+        margin-left: auto;
+        text-align: right;
+      }
+
+      .chat-message.receiver {
+        background-color: #435f7a;
+        color: white;
+        margin-right: auto;
+        text-align: left;
+      }
+
+      .chat-input {
+        background-color: white;
+        padding: 15px;
+        border-top: 1px solid #ddd;
+      }
+
+      .chat-input button {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        background: #435f7a;
+        color: white;
+        border: none;
+      }
+
+      .chat-input button:hover {
+        background: #2c3e50;
+      }
+
+      .sidebar {
+        background-color: #2c3e50;
+        overflow-y: auto;
+        border-right: 2px solid #34495e;
+      }
+
+      .sidebar a {
+        background: #2c3e50;
+        color: white;
+        border-bottom: 1px solid #34495e;
+      }
+
+      .sidebar i {
+        color: white;
+      }
+
+      .sidebar .list-group-item {
+        padding: 20px 25px;
+        font-size: 18px;
+        border: none;
+      }
+
+      .sidebar .list-group-item:hover {
+        background-color: #34495e;
+        color: white;
+        cursor: pointer;
+      }
+
+      .sidebar .list-group-item.active {
+        background-color: #34495e !important;
+        color: white;
+      }
+
+      .active {
+        background-color: #34495e !important;
+        color: white;
+      }
+
+      .logout {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        padding: 15px;
+        background-color: #2c3e50;
+      }
+
+      .logout a {
+        color: white;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .col-3 {
+          width: 100%;
+        }
+
+        .col-9 {
+          width: 100%;
+        }
+
+        .chatbox {
+          padding: 10px;
+          height: 60vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid h-100">
+      <div class="row h-100">
+        <!-- User List Sidebar (4 Columns) -->
+        <div class="col-12 col-md-3 sidebar p-3" style="background-color: #14213d;">
+          <h5 class="text-white mb-3"><b>CHAT-APPLICATION</b></h5>
+          <div class="container mt-3" >
+            <!-- Collapse Button -->
+            <button
+              class="btn btn-secondary mb-3"
+              type="button"
+              data-toggle="collapse"
+              data-target="#contactsCollapse"
+              aria-expanded="false"
+              aria-controls="contactsCollapse"
+              style="background-color: #14213d;"
+            >
+              Users
+            </button>
+          
+            <!-- Contacts List (Collapsible) -->
+            <div class="collapse" id="contactsCollapse">
+              <div class="contacts">
+                {% for item in user_last_messages %}
+                <a
+                  href="{% url 'chat' item.user.username %}"
+                  class="list-group-item list-group-item-action {% if item.user.username == room_name %} active {% endif %}"
+                  data-id="{{ room_name }}"
+                  style="background-color: #14213d;"
+                >
+                  <div class="d-flex align-items-center">
+                    <img
+                      src="https://ui-avatars.com/api/?name={{ item.user.username|urlencode }}&size=64&background=random"
+                      alt="{{ item.user.username }}'s Profile Image"
+                      class="profile-icon rounded-circle mr-3"
+                      style="width: 2rem; height: 2rem; object-fit: cover"
+                    />
+                    <div class="w-100">
+                      <div class="d-flex justify-content-between">
+                        <strong class="text-truncate">{{ item.user.username }}</strong>
+                        {% if item.last_message %}
+                        <small class="text-nowrap timestamp">
+                          {{ item.last_message.timestamp|date:"H:i" }}</small
+                        >
+                        {% endif %}
+                      </div>
+                      <div>
+                        {% if item.last_message %}
+                        <small class="d-block text-truncate last-msg">
+                          {% if item.last_message.sender == request.user %} You: {% endif %}
+                          {{ item.last_message.content|truncatewords:5 }}
+                        </small>
+                        {% else %}
+                        <small>No messages yet</small>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </a>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          <div class="logout" style="background-color: #14213d">
+            <h5 class="text-white">
+              <i class="fas fa-user" style="color: #e63946"></i>
+              {{ request.user.username|title }}
+            </h5>
+            <h5 class="logout-link">
+              <i class="fas fa-sign-out-alt" style="color: rgb(255, 255, 255)"></i>
+              <a href="{% url 'logout' %}" class="text-white">Logout</a>
+            </h5>
+          </div>
+        </div>
+
+        <!-- Chat Area (8 Columns) -->
+        <div class="col-12 col-md-9 chat-container p-3" style="background-color: #ffffff;">
+          <!-- Chat Header -->
+          <div class="d-flex align-items-center mb-3">
+            <img
+              src="https://ui-avatars.com/api/?name={{ room_name|urlencode }}&size=64&background=random"
+              style="border-radius: 50%; height: 45px; width: 45px; object-fit: cover"
+            />
+            <h3 class="display-5 mb-0 ml-3">{{ room_name }}</h3>
+            <form method="GET" action="" class="ml-auto">
+              <div class="form-group mb-0">
+                <input
+                  type="text"
+                  name="search"
+                  id="searchInput"
+                  class="form-control"
+                  placeholder="Search messages..."
+                  value="{{ search_query }}"
+                />
+              </div>
+            </form>
+          </div>
+
+          <!-- Chatbox -->
+          <div id="chatbox" class="chatbox flex-fill mb-4"  >
+            {% if chats %}
+              {% for message in chats %}
+              <div class="chat-message {% if message.sender == request.user %} sender {% else %} receiver {% endif %}" style="background-color: #ef476f;">
+                <span style="color: #ffffff;">{{ message.content }}</span>
+              </div>
+              {% endfor %}
+            {% else %}
+            <p class="no-messages">No Messages.</p>
+            {% endif %}
+          </div>
+
+          <!-- Message Input -->
+          <div class="chat-input">
+            <div class="input-group">
+              <input
+                type="text"
+                id="my_input"
+                class="form-control"
+                placeholder="Type a message..."
+                required
+              />
+              <div class="input-group-append">
+                <button id="submit_button" class="btn btn-primary" type="button">
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{slug|json_script:"room_slug"}}
+    <!-- Bootstrap JS for Collapse functionality -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+      const chatbox = document.querySelector("#chatbox");
+
+      function scrollToBottom() {
+        chatbox.scrollTop = chatbox.scrollHeight;
+      }
+
+      scrollToBottom();
+
+      const roomName = JSON.parse(document.getElementById("room_slug").textContent);
+      const chatSocket = new WebSocket("ws://" + window.location.host + "/ws/chat/{{ room_name }}/");
+
+      chatSocket.onopen = function (e) {
+        console.log("Connection established!");
+      };
+      chatSocket.onclose = function (e) {
+        console.log("Connection closed!");
+      };
+
+      document.querySelector("#my_input").focus();
+      document.querySelector("#my_input").onkeyup = function (e) {
+        if (e.keyCode == 13) {
+          e.preventDefault();
+          document.querySelector("#submit_button").click();
+        }
+      };
+
+      document.querySelector("#submit_button").onclick = function (e) {
+        const messageInput = document.querySelector("#my_input").value;
+
+        if (messageInput.length === 0) {
+          alert("Add some input first or press the Send button!");
+        } else {
+          chatSocket.send(
+            JSON.stringify({
+              message: messageInput,
+              username: "{{ request.user.username }}",
+              room_name: "{{ room_name }}",
+            })
+          );
+          document.querySelector("#my_input").value = "";
+        }
+      };
+
+      chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+
+        if (data.message && data.sender) {
+          const chatbox = document.querySelector("#chatbox");
+          const div = document.createElement("div");
+          div.classList.add("chat-message");
+          div.classList.add(data.sender === "{{ request.user.username }}" ? "sender" : "receiver");
+          div.innerHTML = `<span>${data.message}</span>`;
+          chatbox.appendChild(div);
+          scrollToBottom();
+        }
+      };
+    </script>
+  </body>
+</html>
