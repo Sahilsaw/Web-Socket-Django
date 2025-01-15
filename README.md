@@ -2,7 +2,7 @@ Steps to Run the Project:
 
 1) Install Dependencies
 Run the following command to install all required dependencies from the requirements.txt file:
-pip install -r requirements.txt
+pip install -r requirement.txt
 
 2) Apply Database Migrations
 Ensure you are in the directory containing the manage.py file, then run:
