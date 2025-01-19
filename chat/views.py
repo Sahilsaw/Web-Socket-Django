@@ -9,12 +9,7 @@ from django.utils import timezone
 @login_required
 def chat_room(request, room_name):
     search_query = request.GET.get('search', '') 
-
-    # Exclude specific users
-    excluded_users = ['neszen', 'jack', 'ethan']
-    users = User.objects.exclude(id=request.user.id).exclude(username__in=excluded_users)
-
-    # Get the chats
+    users = User.objects.exclude(id=request.user.id) 
     chats = Message.objects.filter(
         (Q(sender=request.user) & Q(receiver__username=room_name)) |
         (Q(receiver=request.user) & Q(sender__username=room_name))
@@ -26,12 +21,7 @@ def chat_room(request, room_name):
     chats = chats.order_by('timestamp') 
     user_last_messages = []
 
-    # Fetch last messages
     for user in users:
-        # Replace 'admin' with 'dummy user' when displaying the username
-        if user.username == 'admin':
-            user.username = 'dummy user'
-
         last_message = Message.objects.filter(
             (Q(sender=request.user) & Q(receiver=user)) |
             (Q(receiver=request.user) & Q(sender=user))
